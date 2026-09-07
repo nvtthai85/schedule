@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Lập Kế Hoạch & Nhắc Lịch Kiểm Soát FECT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-active {
+            border-color: #2563eb;
+            color: #2563eb;
+            background-color: #eff6ff;
+        }
+        .month-card-active {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.2);
+            transform: translateY(-2px);
+        }
+        .nav-tab-active {
+            border-bottom: 2px solid #2563eb;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+        .nav-tab-inactive {
+            border-bottom: 2px solid transparent;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .nav-tab-inactive:hover {
+            color: #1e293b;
+            border-color: #cbd5e1;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-900 leading-tight">Hệ Thống Lập Kế Hoạch & Nhắc Lịch Kiểm Soát FECT</h1>
+                    <p class="text-xs text-slate-500">Tự động trích xuất Ma Trận &bull; Sắp lịch thông minh &bull; Nhắc lịch Email @fe.edu.vn (QA & Đơn vị)</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Sẵn Sàng
+                </span>
+            </div>
+        </div>
+
+        <!-- Top Navigation Modules Switcher -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 flex items-center space-x-8 text-sm">
+            <button id="nav-btn-planner" onclick="switchModule('planner')" class="py-3 px-1 inline-flex items-center space-x-2 transition cursor-pointer nav-tab-active">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span>1. Lập Kế Hoạch & Xuất Excel</span>
+            </button>
+            <button id="nav-btn-reminders" onclick="switchModule('reminders')" class="py-3 px-1 inline-flex items-center space-x-2 transition cursor-pointer nav-tab-inactive">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                <span>2. Phân Hệ Nhắc Lịch (Email @fe.edu.vn)</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700">Mới</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Toast Notifications -->
+        <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-20px] opacity-0 pointer-events-none">
+            <div id="toast-content" class="px-4 py-3 rounded-xl shadow-lg border text-sm font-medium flex items-center space-x-2"></div>
+        </div>
+
+        <!-- ==================================================================== -->
+        <!-- MODULE 1: LẬP KẾ HOẠCH & XUẤT EXCEL -->
+        <!-- ==================================================================== -->
+        <div id="module-planner" class="space-y-6">
+
+            <!-- Section 1: File Ma Trận & File Nguồn -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 transition">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs">1</span>
+                            <h2 class="text-base font-bold text-slate-900">File Ma Trận Giám Sát</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5 ml-8">Dữ liệu nguồn chứa các sheet của các đơn vị và lịch kiểm soát T1 - T12</p>
+                    </div>
+
+                    <div class="flex items-center flex-wrap gap-2">
+                        <button id="btn-reset-matrix" onclick="resetToDefaultMatrix()" class="text-xs font-medium text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition inline-flex items-center space-x-1.5 cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span>Dùng File Mặc Định</span>
+                        </button>
+                        <label class="cursor-pointer text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-3.5 py-2 rounded-lg shadow-sm shadow-blue-500/20 transition inline-flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <span>Tải Lên Ma Trận Mới</span>
+                            <input type="file" id="file-input" accept=".xlsx, .xlsm" class="hidden" onchange="handleFileUpload(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Current File Status Banner -->
+                <div id="file-status-box" class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                            XLSX
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span id="current-filename" class="font-semibold text-slate-800 text-sm">Đang tải thông tin...</span>
+                                <span id="file-badge" class="px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800">Mặc định</span>
+                            </div>
+                            <div id="file-summary-text" class="text-xs text-slate-500 mt-0.5">Đang nạp danh sách đơn vị và thống kê lịch kiểm soát...</div>
+                        </div>
+                    </div>
+                    <div id="unit-pills" class="flex flex-wrap gap-1.5">
+                        <!-- Unit badges populated via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Chọn Tháng Cần Lập Lịch -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 transition">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs">2</span>
+                            <h2 class="text-base font-bold text-slate-900">Chọn Tháng Cần Xuất Lịch</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5 ml-8">Nhấn chọn tháng để xem trước và trích xuất đúng các nội dung kiểm soát</p>
+                    </div>
+                    <div class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                        Đang chọn: <span id="current-selected-month-label" class="font-bold">Tháng 8 (T8)</span>
+                    </div>
+                </div>
+
+                <!-- Month Cards Grid (T1 -> T12) -->
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-12 gap-2.5" id="month-selector-grid">
+                    <!-- Generated by JS -->
+                </div>
+            </section>
+
+            <!-- Section 3: Xem Trước & Tùy Chọn -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 transition">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-bold text-xs">3</span>
+                            <h2 class="text-base font-bold text-slate-900">Xem Trước Nội Dung Kiểm Soát</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5 ml-8">Tổng hợp nhiệm vụ theo từng đơn vị được trích xuất cho tháng đã chọn</p>
+                    </div>
+
+                    <!-- Export CTA Top Button -->
+                    <div class="flex items-center space-x-3">
+                        <button onclick="triggerExport()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-blue-500/25 transition active:scale-95 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span>Xuất File Kế Hoạch (.xlsx)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tổng Nhiệm Vụ</div>
+                        <div id="stat-total-tasks" class="text-2xl font-black text-slate-900 mt-0.5">0</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Trong tháng được chọn</div>
+                    </div>
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Đơn Vị Có Lịch</div>
+                        <div id="stat-active-units" class="text-2xl font-black text-blue-600 mt-0.5">0 / 6</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Đơn vị có phát sinh kiểm soát</div>
+                    </div>
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Mẫu Chuẩn Áp Dụng</div>
+                        <div class="text-base font-bold text-emerald-600 mt-1 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            QA FECT 2026
+                        </div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Đúng định dạng & layout</div>
+                    </div>
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
+                        <div class="text-[11px] font-medium text-slate-500 uppercase tracking-wider">Tên File Xuất</div>
+                        <div id="stat-target-filename" class="text-xs font-semibold text-slate-800 mt-1 truncate">Ke_hoach_kiem_soat_T08_2026.xlsx</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Sẵn sàng tải về máy</div>
+                    </div>
+                </div>
+
+                <!-- Export Settings Accordion -->
+                <div class="mb-5 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                    <div class="font-semibold text-slate-700 mb-2.5 flex items-center space-x-1.5">
+                        <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>Cấu hình xuất file Kế Hoạch:</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <label class="flex items-center space-x-2 text-slate-700 cursor-pointer">
+                            <input type="checkbox" id="opt-calendar" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <span>Kèm sheet Lịch tổng quan (LICH KS)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 text-slate-700 cursor-pointer">
+                            <input type="checkbox" id="opt-empty-sheets" checked class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <span>Bao gồm cả các sheet 0 nhiệm vụ</span>
+                        </label>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-slate-500">Quy cách Sheet FSC:</span>
+                            <select id="opt-fsc-mode" class="rounded border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 focus:border-blue-500 focus:ring-blue-500">
+                                <option value="fsc_ct">Chỉ xuất FSC CT (Chuẩn template)</option>
+                                <option value="all_fsc">Xuất đủ 3 sheet (FSC CT, ST, HG)</option>
+                            </select>
+                        </div>
+                        <div class="col-span-full pt-2.5 mt-1 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <label class="flex items-center space-x-2 text-blue-800 font-semibold cursor-pointer">
+                                <input type="checkbox" id="opt-auto-schedule" checked onchange="loadMonthPreview(currentMonth)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                <span>Tự động sắp lịch thông minh (Theo Calendar tháng, từ ngày 6-23, &le; 4 dòng/buổi, tránh xung đột)</span>
+                            </label>
+                            <span class="text-[11px] text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">Điền tự động Cột H (Ngày), I (Giờ), J (CB) & Lịch tổng quan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unit Tabs -->
+                <div class="flex items-center justify-between border-b border-slate-200 overflow-x-auto pb-px" id="unit-tabs-bar">
+                    <!-- Tabs generated via JS -->
+                </div>
+
+                <!-- Search in Preview Table -->
+                <div class="mt-4 mb-3 flex items-center justify-between">
+                    <div class="relative w-full max-w-xs">
+                        <input type="text" id="table-search" placeholder="Tìm kiếm nội dung, tài liệu, bộ phận..." oninput="filterPreviewTable()" class="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <div class="text-xs text-slate-500" id="table-row-count">Hiển thị 0 dòng</div>
+                </div>
+
+                <!-- Preview Table Container -->
+                <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-96 shadow-inner bg-white">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-100/90 text-slate-700 font-semibold sticky top-0 z-10 border-b border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3 w-10 text-center">STT</th>
+                                <th class="py-2.5 px-3 w-20 text-center">Đơn vị</th>
+                                <th class="py-2.5 px-2.5 w-24 text-center bg-blue-50/70 text-blue-900 border-x border-blue-100">Ngày KS</th>
+                                <th class="py-2.5 px-2.5 w-28 text-center bg-blue-50/70 text-blue-900 border-r border-blue-100">Giờ KS</th>
+                                <th class="py-2.5 px-2 w-28 text-center bg-purple-50/70 text-purple-900 border-r border-purple-100">CB ĐG</th>
+                                <th class="py-2.5 px-3 w-32">Phòng/ Bộ phận</th>
+                                <th class="py-2.5 px-3 w-52">Tài liệu hướng dẫn</th>
+                                <th class="py-2.5 px-3 w-60">Nội dung yêu cầu</th>
+                                <th class="py-2.5 px-3 min-w-[280px]">Chi tiết yêu cầu</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-table-body" class="divide-y divide-slate-100">
+                            <!-- Rows rendered by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Big Bottom CTA -->
+                <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-gradient-to-r from-slate-50 to-blue-50/40 rounded-xl border border-slate-200">
+                    <div>
+                        <div class="font-bold text-slate-900 text-sm">Sẵn sàng xuất kế hoạch kiểm soát?</div>
+                        <div class="text-xs text-slate-500">File sẽ được tạo chuẩn với cấu trúc các sheet, tiêu đề, và format như template QA FECT.</div>
+                    </div>
+                    <button id="btn-export-bottom" onclick="triggerExport()" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md shadow-blue-500/25 transition active:scale-95 cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span>Xuất & Tải File Kế Hoạch Ngay</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================================================================== -->
+        <!-- MODULE 2: PHÂN HỆ NHẮC LỊCH (EMAIL @FE.EDU.VN) -->
+        <!-- ==================================================================== -->
+        <div id="module-reminders" class="space-y-6 hidden">
+
+            <!-- Banner: Giới thiệu & Nạp File Kế Hoạch Hoàn Chỉnh -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 transition">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">🔔</div>
+                            <h2 class="text-base font-bold text-slate-900">Phân Hệ Nhắc Lịch Kiểm Soát (Email @fe.edu.vn)</h2>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1 ml-9">Nạp file Kế Hoạch Kiểm Soát (.xlsx) để tự động nhận diện ca trực, đại diện đơn vị và gửi thông báo nhắc việc qua Email trước 1 ngày.</p>
+                    </div>
+
+                    <div class="flex items-center flex-wrap gap-2">
+                        <button onclick="openReminderConfigModal()" class="text-xs font-semibold text-slate-700 hover:text-blue-700 bg-slate-100 hover:bg-slate-200 px-3.5 py-2 rounded-lg transition inline-flex items-center space-x-1.5 cursor-pointer">
+                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <span>⚙️ Cấu Hình Email & Cán Bộ</span>
+                        </button>
+
+                        <button onclick="loadDefaultReminderPlan()" class="text-xs font-medium text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-lg transition inline-flex items-center space-x-1.5 cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span>Nạp Kế Hoạch T8/2026</span>
+                        </button>
+
+                        <label class="cursor-pointer text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3.5 py-2 rounded-lg shadow-sm shadow-indigo-500/20 transition inline-flex items-center space-x-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <span>Tải Lên File Kế Hoạch Mới (.xlsx)</span>
+                            <input type="file" id="plan-file-input" accept=".xlsx, .xlsm" class="hidden" onchange="handlePlanFileUpload(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Plan Info Status Banner -->
+                <div class="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-sm">
+                            📅
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span id="reminder-plan-filename" class="font-bold text-slate-900 text-sm">Ke_hoach_kiem_soat_T08_2026.xlsx</span>
+                                <span id="reminder-plan-badge" class="px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-100 text-indigo-800">Đã nạp</span>
+                            </div>
+                            <div id="reminder-plan-summary" class="text-xs text-slate-500 mt-0.5">Tháng 08/2026 &bull; 96 nhiệm vụ &bull; 19 buổi kiểm soát</div>
+                        </div>
+                    </div>
+
+                    <!-- Mini stats -->
+                    <div class="flex items-center space-x-4 text-xs">
+                        <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Tổng Ca KS</span>
+                            <span id="stat-reminder-events" class="text-base font-black text-indigo-600">19</span>
+                        </div>
+                        <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Số Ngày Có Lịch</span>
+                            <span id="stat-reminder-dates" class="text-base font-black text-slate-800">12</span>
+                        </div>
+                        <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200">
+                            <span class="text-slate-400 block text-[10px] uppercase font-bold">Tổng Nhiệm Vụ</span>
+                            <span id="stat-reminder-tasks" class="text-base font-black text-emerald-600">96</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 1.5: Tự Động Quét Ngày Hệ Thống & Gửi Email Nhắc Việc -->
+            <section class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl text-white shadow-md p-5 sm:p-6 transition border border-indigo-900/50">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                    <div>
+                        <div class="flex items-center space-x-2.5">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-blue-500/20 text-blue-300 font-bold text-base">🤖</span>
+                            <h3 class="text-base font-bold text-white tracking-wide">Tự Động Quét Ngày Hệ Thống & Gửi Email Nhắc Việc</h3>
+                            <span id="auto-scanner-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🟢 ĐANG BẬT</span>
+                        </div>
+                        <p class="text-xs text-slate-300 mt-1.5 max-w-2xl leading-relaxed">
+                            Hệ thống tự động so khớp ngày hệ thống với các ca kiểm soát trong kế hoạch để gửi email nhắc việc <strong class="text-amber-300 font-bold">trước 1 ngày</strong> cho Cán bộ QA và Đại diện đơn vị.
+                        </p>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mt-3 text-xs text-slate-300">
+                            <div class="flex items-center space-x-1.5 bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
+                                <span class="text-slate-400">📅 Ngày hệ thống:</span>
+                                <strong id="live-system-date" class="text-white">--/--/----</strong>
+                            </div>
+                            <div class="flex items-center space-x-1.5 bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
+                                <span class="text-slate-400">⏰ Giờ quét hàng ngày:</span>
+                                <strong id="live-scan-time" class="text-amber-300 font-mono">08:30</strong>
+                            </div>
+                            <div class="flex items-center space-x-1.5 bg-white/10 px-2.5 py-1 rounded-lg border border-white/5">
+                                <span class="text-slate-400">🎯 Mục tiêu nhắc:</span>
+                                <strong id="live-target-remind-info" class="text-blue-200">Trước 1 ngày (Ngày mai)</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <button onclick="triggerAutoScan(false)" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-700/30 transition inline-flex items-center space-x-1.5 cursor-pointer">
+                            <span>⚡ Quét & Gửi Tự Động Ngay</span>
+                        </button>
+                        <button onclick="openSimulateScanModal()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white transition inline-flex items-center space-x-1.5 cursor-pointer">
+                            <span>🧪 Thử Nghiệm Quét Theo Ngày</span>
+                        </button>
+                        <button onclick="openSentHistoryModal()" class="px-3 py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition inline-flex items-center space-x-1.5 cursor-pointer">
+                            <span>📋 Nhật Ký Đã Gửi</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Danh Sách Ca Kiểm Soát & Nhắc Việc -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 transition">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Danh Sách Lịch Kiểm Soát & Điều Khiển Nhắc Việc</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Tự động tính ngày nhắc (Trước 1 ngày). Hỗ trợ xem trước và gửi Email @fe.edu.vn cho cả Cán bộ QA và Đại diện đơn vị.</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-slate-500">Quy ước màu CB:</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-white border border-slate-300 text-slate-800 shadow-2xs">ThaoTDP (Trắng)</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#F7FFB9] text-yellow-900 border border-yellow-300 shadow-2xs">DiCQ (Vàng)</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FEF4EC] text-amber-950 border border-orange-200 shadow-2xs">ThanhNTD6 (Nâu nhạt)</span>
+                    </div>
+                </div>
+
+                <!-- Filter & Search Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 my-4">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Lọc Cán Bộ Đánh Giá:</label>
+                        <select id="filter-reminder-auditor" onchange="filterReminderEvents()" class="w-full text-xs rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-500">
+                            <option value="">Tất cả cán bộ</option>
+                            <option value="ThaoTDP">ThaoTDP (Trần Đoàn Phương Thảo)</option>
+                            <option value="DiCQ">DiCQ (Chung Quốc Di)</option>
+                            <option value="ThanhNTD6">ThanhNTD6 (Nguyễn Thị Đan Thanh)</option>
+                            <option value="ThaoTDP + DiCQ">ThaoTDP + DiCQ</option>
+                            <option value="DiCQ + ThanhNTD6">DiCQ + ThanhNTD6</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Lọc Theo Ngày:</label>
+                        <select id="filter-reminder-date" onchange="filterReminderEvents()" class="w-full text-xs rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-700 focus:outline-none focus:border-indigo-500">
+                            <option value="">Tất cả các ngày</option>
+                        </select>
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Tìm Kiếm Đơn Vị / Đại Diện / Nội Dung:</label>
+                        <div class="relative">
+                            <input type="text" id="filter-reminder-search" oninput="filterReminderEvents()" placeholder="Tìm kiếm đơn vị, cán bộ, đại diện đơn vị, thời gian hồ sơ, nội dung..." class="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-indigo-500">
+                            <svg class="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Table -->
+                <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-[500px] shadow-inner bg-white">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-100 text-slate-700 font-semibold sticky top-0 z-10 border-b border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3 w-10 text-center">STT</th>
+                                <th class="py-2.5 px-3 w-28 text-center bg-blue-50/70 text-blue-900 border-x border-blue-100">Ngày Kiểm Soát</th>
+                                <th class="py-2.5 px-3 w-28 text-center bg-indigo-50/70 text-indigo-900 border-r border-indigo-100">Ngày Nhắc Việc</th>
+                                <th class="py-2.5 px-3 w-24 text-center">Khung Giờ</th>
+                                <th class="py-2.5 px-3 w-32 text-center">Cán Bộ Đánh Giá</th>
+                                <th class="py-2.5 px-3 w-32">Đơn Vị (Sheet)</th>
+                                <th class="py-2.5 px-3 min-w-[130px] bg-indigo-50/70 text-indigo-900 border-x border-indigo-100">Đại Diện Đơn Vị</th>
+                                <th class="py-2.5 px-3 min-w-[140px] bg-emerald-50/70 text-emerald-900 border-r border-emerald-100">Thời Gian Phát Sinh Hồ Sơ</th>
+                                <th class="py-2.5 px-3 w-16 text-center">Số NV</th>
+                                <th class="py-2.5 px-3 min-w-[180px]">Nội Dung Chính</th>
+                                <th class="py-2.5 px-3 w-28 text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reminder-events-tbody" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
+                    <span id="reminder-events-counter">Hiển thị 0 ca kiểm soát</span>
+                    <span class="text-slate-400">Gợi ý: Bấm 👁️ để xem trước mẫu thư & tin nhắn trước khi gửi</span>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto text-center text-xs text-slate-500">
+        Hệ Thống Lập Kế Hoạch & Nhắc Lịch Kiểm Soát FECT &copy; 2026 &bull; Phòng Đảm Bảo Chất Lượng FECT
+    </footer>
+
+    <!-- ==================================================================== -->
+    <!-- MODAL 1: CẤU HÌNH EMAIL & CÁN BỘ QA -->
+    <!-- ==================================================================== -->
+    <div id="modal-reminder-config" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <span class="text-lg">⚙️</span>
+                    <h3 class="font-bold text-slate-900 text-base">Cấu Hình Tài Khoản Email @fe.edu.vn & Cán Bộ QA</h3>
+                </div>
+                <button onclick="closeReminderConfigModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1.5 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Config Tabs -->
+            <div class="flex border-b border-slate-200 px-6 bg-white text-xs font-semibold">
+                <button id="cfg-tab-btn-email" onclick="switchConfigTab('email')" class="py-3 px-4 text-blue-600 border-b-2 border-blue-600 cursor-pointer">1. Email Google / Gmail (SMTP)</button>
+                <button id="cfg-tab-btn-auditors" onclick="switchConfigTab('auditors')" class="py-3 px-4 text-slate-500 hover:text-slate-700 border-b-2 border-transparent cursor-pointer">2. Danh Sách Cán Bộ QA</button>
+            </div>
+
+            <!-- Modal Content Scrollable -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+
+                <!-- Tab 1: Email -->
+                <div id="cfg-panel-email" class="space-y-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-blue-900 leading-relaxed">
+                        <div class="font-bold flex items-center space-x-1.5 text-blue-800">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>🔑 Hướng dẫn tạo Mật khẩu ứng dụng (App Password) cho tài khoản Gmail / Google:</span>
+                        </div>
+                        <p class="mt-1">Google yêu cầu bảo mật 2 lớp (Xác minh 2 bước). Để ứng dụng gửi được email nhắc việc tự động qua máy chủ Google (Gmail / Google Workspace), bạn làm theo 4 bước sau:</p>
+                        <ol class="mt-2 space-y-1.5 text-[11px] text-blue-950 font-medium list-decimal pl-5">
+                            <li>Bật <strong>"Xác minh 2 bước" (2-Step Verification)</strong> trên tài khoản Google của bạn (nếu chưa bật).</li>
+                            <li>Truy cập trực tiếp vào trang tạo mật khẩu ứng dụng: 👉 <a href="https://myaccount.google.com/apppasswords" target="_blank" class="underline font-bold text-blue-700 hover:text-blue-900">https://myaccount.google.com/apppasswords</a></li>
+                            <li>Đặt tên cho ứng dụng (ví dụ: <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-800">QA FECT</code>) rồi nhấn nút <strong>Tạo (Create)</strong>.</li>
+                            <li>Google sẽ cấp một chuỗi mật khẩu gồm <strong>16 ký tự màu vàng</strong> (dạng <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-800">xxxx yyyy zzzz wwww</code>). Hãy sao chép 16 ký tự này và dán vào ô <em>Mật khẩu ứng dụng</em> bên dưới.</li>
+                        </ol>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Máy chủ SMTP:</label>
+                            <input type="text" id="cfg-smtp-host" value="smtp.gmail.com" class="w-full px-3 py-2 border rounded-lg border-slate-200 bg-slate-50 focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Cổng (Port):</label>
+                            <input type="number" id="cfg-smtp-port" value="587" class="w-full px-3 py-2 border rounded-lg border-slate-200 bg-slate-50 focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Tài khoản Email gửi (Gmail / Google Workspace):</label>
+                            <input type="email" id="cfg-sender-email" placeholder="vi_du@gmail.com hoặc email_ban@fe.edu.vn" class="w-full px-3 py-2 border rounded-lg border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Mật khẩu ứng dụng (App Password 16 ký tự):</label>
+                            <input type="password" id="cfg-sender-password" placeholder="Nhập mật khẩu ứng dụng 16 ký tự từ Google" class="w-full px-3 py-2 border rounded-lg border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-700 mb-1">Tên người gửi hiển thị:</label>
+                            <input type="text" id="cfg-sender-name" value="QA FECT - Phòng Đảm Bảo Chất Lượng" class="w-full px-3 py-2 border rounded-lg border-slate-200 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Test Email Connection Box -->
+                    <div class="mt-4 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center gap-2">
+                        <input type="email" id="cfg-test-recipient" placeholder="Nhập email nhận thử (vd: your_name@fe.edu.vn)" class="flex-1 text-xs px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+                        <button type="button" onclick="testEmailConnection()" class="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition inline-flex items-center space-x-1.5 cursor-pointer">
+                            <span>📨 Gửi Thư Thử Nghiệm</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Danh Sách Cán Bộ QA -->
+                <div id="cfg-panel-auditors" class="space-y-4 hidden">
+                    <p class="text-slate-500">Cấu hình địa chỉ email (@fe.edu.vn) của từng Cán bộ Đánh giá QA để hệ thống gửi chính xác.</p>
+
+                    <div class="space-y-3" id="cfg-auditors-list">
+                        <!-- Auditor cards generated by JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500">Cấu hình được lưu trong file `reminder_config.json` an toàn trên máy</span>
+                <div class="flex items-center space-x-2">
+                    <button onclick="closeReminderConfigModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition cursor-pointer">Đóng</button>
+                    <button onclick="saveReminderConfig()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-sm transition cursor-pointer">💾 Lưu Cấu Hình</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- MODAL 2: XEM TRƯỚC & GỬI EMAIL NHẮC LỊCH -->
+    <!-- ==================================================================== -->
+    <div id="modal-reminder-preview" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span id="preview-event-auditor-badge" class="px-2.5 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800">DiCQ</span>
+                        <h3 id="preview-event-title" class="font-bold text-slate-900 text-base">Xem Trước & Gửi Email Nhắc Lịch</h3>
+                    </div>
+                    <p id="preview-event-subtitle" class="text-xs text-slate-500 mt-0.5">Ngày kiểm soát: 21/08/2026 &bull; Giờ: 09h00 - 12h00 &bull; Đơn vị: FGW</p>
+                </div>
+                <button onclick="closeReminderPreviewModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1.5 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Preview Body -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <!-- Recipients Box -->
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                            📬 Danh sách Email người nhận (Cán bộ QA & Đại diện đơn vị):
+                        </label>
+                        <input type="text" id="preview-email-recipients-input" class="w-full px-3 py-2 text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" placeholder="vd: dicq@fe.edu.vn, trunght11@fe.edu.vn">
+                        <div id="preview-email-recipients-breakdown" class="flex flex-wrap items-center gap-1.5 mt-2 text-[11px]">
+                            <!-- Filled by JS with chips for QA and Reps -->
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-200/60 flex items-center space-x-2 text-xs">
+                        <span class="font-semibold text-slate-500 w-24">Tiêu đề thư:</span>
+                        <span id="preview-email-subject" class="font-semibold text-blue-900 truncate"></span>
+                    </div>
+                </div>
+                
+                <!-- Email Iframe Preview -->
+                <div class="border border-slate-200 rounded-xl overflow-hidden shadow-inner h-[380px]">
+                    <iframe id="preview-email-iframe" class="w-full h-full border-0 bg-white"></iframe>
+                </div>
+            </div>
+
+            <!-- Actions Footer -->
+            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <span id="preview-send-status" class="text-xs text-slate-500">Sẵn sàng gửi email nhắc lịch tới các cán bộ.</span>
+                
+                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                    <button onclick="closeReminderPreviewModal()" class="px-3.5 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition cursor-pointer">
+                        Đóng
+                    </button>
+
+                    <button id="btn-send-email-action" onclick="triggerSendCurrentEmail()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md shadow-blue-500/20 inline-flex items-center space-x-2 transition cursor-pointer">
+                        <span>✉️ Gửi Email Nhắc Lịch (QA & Đơn Vị)</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- MODAL 3: THỬ NGHIỆM QUÉT & GỬI TỰ ĐỘNG THEO NGÀY GIẢ LẬP -->
+    <!-- ==================================================================== -->
+    <div id="modal-simulate-scan" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🧪</span>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">Thử Nghiệm Quét & Gửi Email Tự Động Theo Ngày</h3>
+                        <p class="text-xs text-slate-500">Giả lập ngày quét để kiểm tra tính năng gửi tự động trước 1 ngày cho bất kỳ ngày nào trong kế hoạch</p>
+                    </div>
+                </div>
+                <button onclick="closeSimulateScanModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1.5 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 leading-relaxed">
+                    💡 <strong>Nguyên lý:</strong> Nếu bạn chọn ngày quét là <strong>07/10/2026</strong>, hệ thống sẽ tìm các ca kiểm soát vào <strong>08/10/2026</strong> (trước 1 ngày) để gửi email nhắc việc cho Cán bộ QA và Đại diện đơn vị.
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Chọn hoặc nhập Ngày Quét Giả Lập (dd.mm.yyyy):</label>
+                        <input type="text" id="sim-scan-date-input" placeholder="ví dụ: 07.10.2026 hoặc 05.08.2026" class="w-full px-3 py-2 border rounded-lg border-slate-300 font-bold text-slate-800 focus:outline-none focus:border-indigo-500">
+                        <p class="text-[11px] text-slate-500 mt-1">Gợi ý ngày quét từ kế hoạch đã nạp:</p>
+                        <div id="sim-date-suggestions" class="flex flex-wrap gap-1 mt-1">
+                            <!-- Populated with date suggestions by JS -->
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col justify-between">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Tùy chọn nâng cao:</label>
+                            <label class="inline-flex items-center space-x-2 text-slate-700 cursor-pointer mt-1">
+                                <input type="checkbox" id="sim-force-resend" class="rounded text-indigo-600">
+                                <span class="font-medium">Gửi lại cả ca đã gửi (Bỏ qua kiểm tra trùng)</span>
+                            </label>
+                            <p class="text-[11px] text-slate-400 mt-1">Mặc định hệ thống tự động phát hiện và bỏ qua ca đã gửi thành công trước đó.</p>
+                        </div>
+
+                        <button id="btn-run-sim-scan" onclick="executeSimulatedScan()" class="mt-4 w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-500/20 transition inline-flex items-center justify-center space-x-2 cursor-pointer">
+                            <span>🚀 Bắt Đầu Quét & Gửi Thử Nghiệm</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Simulation Results Output -->
+                <div id="sim-result-container" class="hidden mt-4 pt-4 border-t border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800 text-sm">Kết Quả Quét Tự Động:</h4>
+                        <span id="sim-result-badge" class="px-2 py-0.5 rounded text-[11px] font-bold"></span>
+                    </div>
+                    <div id="sim-result-summary" class="text-slate-600 leading-relaxed font-medium"></div>
+                    <div id="sim-result-list" class="space-y-2 max-h-56 overflow-y-auto"></div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+                <button onclick="closeSimulateScanModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition cursor-pointer">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================================================================== -->
+    <!-- MODAL 4: NHẬT KÝ ĐÃ GỬI (SENT REMINDERS HISTORY) -->
+    <!-- ==================================================================== -->
+    <div id="modal-sent-history" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">📋</span>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base">Nhật Ký Gửi Email Nhắc Việc (Auto & Manual)</h3>
+                        <p class="text-xs text-slate-500">Toàn bộ lịch sử các thư nhắc việc đã được hệ thống quét gửi tự động hoặc gửi thủ công</p>
+                    </div>
+                </div>
+                <button onclick="closeSentHistoryModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1.5 cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Table -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-3 text-xs">
+                <div class="flex items-center justify-between">
+                    <span id="history-total-count" class="text-slate-600 font-medium">Tổng số: 0 lượt gửi</span>
+                    <button onclick="clearSentHistoryConfirm()" class="text-xs text-red-600 hover:text-red-800 font-semibold px-2.5 py-1 rounded bg-red-50 hover:bg-red-100 transition cursor-pointer">
+                        🗑️ Xóa Lịch Sử
+                    </button>
+                </div>
+
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse text-[11px]">
+                        <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="py-2.5 px-3 w-10 text-center">STT</th>
+                                <th class="py-2.5 px-3 w-32">Thời Gian Gửi</th>
+                                <th class="py-2.5 px-3 w-24 text-center">Ngày Kiểm Soát</th>
+                                <th class="py-2.5 px-3 w-28 text-center">Cán Bộ QA</th>
+                                <th class="py-2.5 px-3">Đơn Vị</th>
+                                <th class="py-2.5 px-3">Người Nhận (Email)</th>
+                                <th class="py-2.5 px-3 w-20 text-center">Chế Độ</th>
+                                <th class="py-2.5 px-3 w-24 text-center">Trạng Thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sent-history-tbody" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+                <button onclick="closeSentHistoryModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 transition cursor-pointer">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // =====================================================================
+        // GLOBAL STATE
+        // =====================================================================
+        let currentModule = 'planner'; // 'planner' or 'reminders'
+        let currentMonth = 8;
+        let matrixData = null;
+        let previewData = null;
+        let activeTabUnit = null;
+
+        // Reminder State
+        let currentPlanData = null;
+        let reminderConfig = null;
+        let currentPreviewEventId = null;
+
+        // =====================================================================
+        // INITIALIZATION
+        // =====================================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchMatrixInfo();
+            loadCurrentReminderPlan();
+            fetchAutoScannerStatus();
+        });
+
+        // =====================================================================
+        // MODULE NAVIGATION SWITCHER
+        // =====================================================================
+        function switchModule(moduleName) {
+            currentModule = moduleName;
+            const btnPlanner = document.getElementById('nav-btn-planner');
+            const btnReminders = document.getElementById('nav-btn-reminders');
+            const divPlanner = document.getElementById('module-planner');
+            const divReminders = document.getElementById('module-reminders');
+
+            if (moduleName === 'planner') {
+                btnPlanner.className = 'py-3 px-1 inline-flex items-center space-x-2 transition cursor-pointer nav-tab-active';
+                btnReminders.className = 'py-3 px-1 inline-flex items-center space-x-2 transition cursor-pointer nav-tab-inactive';
+                divPlanner.classList.remove('hidden');
+                divReminders.classList.add('hidden');
+            } else {
+                btnPlanner.className = 'py-3 px-1 inline-flex items-center space-x-2 transition cursor-pointer nav-tab-inactive';
+                btnReminders.className = 'py-3 px-1 inline-flex items-center space-x-2 transition cursor-pointer nav-tab-active';
+                divPlanner.classList.add('hidden');
+                divReminders.classList.remove('hidden');
+                loadCurrentReminderPlan();
+                fetchAutoScannerStatus();
+            }
+        }
+
+        // =====================================================================
+        // TOAST NOTIFICATIONS
+        // =====================================================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const content = document.getElementById('toast-content');
+            
+            if (type === 'success') {
+                content.className = 'px-4 py-3 rounded-xl shadow-lg border text-xs font-medium flex items-center space-x-2 bg-emerald-50 text-emerald-800 border-emerald-200';
+                content.innerHTML = `<svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>${message}</span>`;
+            } else {
+                content.className = 'px-4 py-3 rounded-xl shadow-lg border text-xs font-medium flex items-center space-x-2 bg-rose-50 text-rose-800 border-rose-200';
+                content.innerHTML = `<svg class="w-4 h-4 text-rose-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg><span>${message}</span>`;
+            }
+            
+            toast.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+            }, 4000);
+        }
+
+        // =====================================================================
+        // MODULE 1: MATRIX & PLANNER LOGIC
+        // =====================================================================
+        async function fetchMatrixInfo() {
+            try {
+                const res = await fetch('/api/matrix-info');
+                const data = await res.json();
+                if (data.success) {
+                    matrixData = data;
+                    renderFileStatus(data);
+                    renderMonthSelector(data.month_totals);
+                    loadMonthPreview(currentMonth);
+                } else {
+                    showToast(data.error || 'Lỗi đọc ma trận', 'error');
+                }
+            } catch (err) {
+                showToast('Không thể kết nối máy chủ', 'error');
+            }
+        }
+
+        function renderFileStatus(data) {
+            document.getElementById('current-filename').innerText = data.filename;
+            const badge = document.getElementById('file-badge');
+            if (data.is_default) {
+                badge.innerText = 'File Mặc Định';
+                badge.className = 'px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-800';
+            } else {
+                badge.innerText = 'Đã Tải Lên';
+                badge.className = 'px-2 py-0.5 rounded text-[11px] font-medium bg-purple-100 text-purple-800';
+            }
+
+            const unitCount = Object.keys(data.units).length;
+            const totalTasks = Object.values(data.month_totals).reduce((a, b) => a + b, 0);
+            document.getElementById('file-summary-text').innerText = `Nhận diện ${unitCount} đơn vị & tổng số ${totalTasks} lượt kiểm soát trong năm`;
+
+            const unitPillsContainer = document.getElementById('unit-pills');
+            unitPillsContainer.innerHTML = '';
+            for (const [uName, uInfo] of Object.entries(data.units)) {
+                const span = document.createElement('span');
+                span.className = 'px-2 py-1 rounded-md text-[11px] font-medium bg-white border border-slate-200 text-slate-700 shadow-2xs';
+                span.innerText = `${uName} (${uInfo.total})`;
+                unitPillsContainer.appendChild(span);
+            }
+        }
+
+        function renderMonthSelector(monthTotals) {
+            const grid = document.getElementById('month-selector-grid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 12; i++) {
+                const mKey = `T${i}`;
+                const count = monthTotals[mKey] || 0;
+                const isSelected = i === currentMonth;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `p-2.5 rounded-xl border text-center transition flex flex-col items-center justify-center cursor-pointer ${
+                    isSelected ? 'month-card-active' : 'bg-slate-50 border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
+                }`;
+                btn.onclick = () => selectMonth(i);
+
+                btn.innerHTML = `
+                    <span class="text-xs font-bold ${isSelected ? 'text-blue-700' : 'text-slate-800'}">Tháng ${i}</span>
+                    <span class="text-[10px] uppercase font-semibold ${isSelected ? 'text-blue-500' : 'text-slate-400'}">${mKey}</span>
+                    <span class="mt-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                        count > 0 ? (isSelected ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700') : 'bg-slate-100 text-slate-300'
+                    }">${count}</span>
+                `;
+
+                grid.appendChild(btn);
+            }
+        }
+
+        function selectMonth(mNum) {
+            currentMonth = mNum;
+            document.getElementById('current-selected-month-label').innerText = `Tháng ${mNum} (T${mNum})`;
+            renderMonthSelector(matrixData.month_totals);
+            loadMonthPreview(mNum);
+        }
+
+        async function loadMonthPreview(mNum) {
+            try {
+                const autoSched = document.getElementById('opt-auto-schedule') ? document.getElementById('opt-auto-schedule').checked : true;
+                const res = await fetch(`/api/preview?month=T${mNum}&auto_schedule=${autoSched}`);
+                const data = await res.json();
+                if (data.success) {
+                    previewData = data;
+                    renderPreview(data);
+                } else {
+                    showToast(data.error || 'Lỗi tải xem trước', 'error');
+                }
+            } catch (e) {
+                showToast('Không thể kết nối máy chủ', 'error');
+            }
+        }
+
+        function renderPreview(data) {
+            document.getElementById('stat-total-tasks').innerText = data.total_tasks;
+            const activeUnits = Object.entries(data.units).filter(([u, tasks]) => tasks.length > 0).length;
+            const totalUnits = Object.keys(data.units).length;
+            document.getElementById('stat-active-units').innerText = `${activeUnits} / ${totalUnits}`;
+            
+            const monthStr = String(currentMonth).padStart(2, '0');
+            document.getElementById('stat-target-filename').innerText = `Ke_hoach_kiem_soat_T${monthStr}_2026.xlsx`;
+
+            const tabsBar = document.getElementById('unit-tabs-bar');
+            tabsBar.innerHTML = '';
+
+            const unitNames = Object.keys(data.units);
+            if (!activeTabUnit || !unitNames.includes(activeTabUnit)) {
+                const firstActive = unitNames.find(u => data.units[u].length > 0);
+                activeTabUnit = firstActive || unitNames[0];
+            }
+
+            unitNames.forEach(uName => {
+                const tasks = data.units[uName];
+                const count = tasks.length;
+                const isActive = uName === activeTabUnit;
+
+                const tabBtn = document.createElement('button');
+                tabBtn.type = 'button';
+                tabBtn.className = `px-3.5 py-2 text-xs font-semibold rounded-t-lg border-b-2 whitespace-nowrap transition flex items-center space-x-1.5 cursor-pointer ${
+                    isActive ? 'tab-active' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                }`;
+                tabBtn.onclick = () => {
+                    activeTabUnit = uName;
+                    renderPreview(previewData);
+                };
+
+                tabBtn.innerHTML = `
+                    <span>${uName}</span>
+                    <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        count > 0 ? (isActive ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700') : 'bg-slate-100 text-slate-400'
+                    }">${count}</span>
+                `;
+                tabsBar.appendChild(tabBtn);
+            });
+
+            renderTableRows(data.units[activeTabUnit] || []);
+        }
+
+        function renderTableRows(rows) {
+            const tbody = document.getElementById('preview-table-body');
+            tbody.innerHTML = '';
+
+            const searchVal = (document.getElementById('table-search').value || '').toLowerCase();
+            const filtered = rows.filter(r => {
+                if (!searchVal) return true;
+                return (r.department || '').toLowerCase().includes(searchVal) ||
+                       (r.document || '').toLowerCase().includes(searchVal) ||
+                       (r.content || '').toLowerCase().includes(searchVal) ||
+                       (r.detail || '').toLowerCase().includes(searchVal);
+            });
+
+            document.getElementById('table-row-count').innerText = `Hiển thị ${filtered.length} / ${rows.length} dòng nhiệm vụ`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="py-8 text-center text-slate-400">
+                            <svg class="w-8 h-8 mx-auto mb-2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            ${rows.length === 0 ? 'Không có nhiệm vụ kiểm soát nào trong tháng này cho đơn vị ' + activeTabUnit : 'Không tìm thấy kết quả phù hợp với từ khóa'}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach((r, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50/40 transition';
+                const dateCell = r.scheduled_date ? `<span class="inline-block px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 font-semibold border border-blue-200 text-[11px]">${r.scheduled_date}</span>` : '—';
+                const timeCell = r.scheduled_time || '—';
+
+                let auditorBadgeClass = "bg-purple-50 text-purple-800 border border-purple-200";
+                if (r.scheduled_auditor) {
+                    const aud = r.scheduled_auditor;
+                    if (aud.includes("ThaoTDP + DiCQ") || (aud.includes("ThaoTDP") && !aud.includes("DiCQ") && !aud.includes("ThanhNTD6"))) {
+                        auditorBadgeClass = "bg-white text-slate-800 border border-slate-400 font-bold shadow-2xs";
+                    } else if (aud.includes("DiCQ") && !aud.includes("ThanhNTD6")) {
+                        auditorBadgeClass = "bg-[#F7FFB9] text-yellow-900 border border-yellow-400 font-bold shadow-2xs";
+                    } else if (aud.includes("ThanhNTD6") || aud.includes("DiCQ + ThanhNTD6")) {
+                        auditorBadgeClass = "bg-[#FEF4EC] text-amber-950 border border-orange-300 font-bold shadow-2xs";
+                    }
+                }
+                const auditorCell = r.scheduled_auditor ? `<span class="inline-block px-2 py-0.5 rounded text-[11px] ${auditorBadgeClass}">${r.scheduled_auditor}</span>` : '—';
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 text-center font-medium text-slate-400">${idx + 1}</td>
+                    <td class="py-2.5 px-3 text-center font-semibold text-slate-700 bg-slate-50/50">${r.unit}</td>
+                    <td class="py-2.5 px-2 text-center whitespace-nowrap">${dateCell}</td>
+                    <td class="py-2.5 px-2 text-center whitespace-nowrap">${timeCell}</td>
+                    <td class="py-2.5 px-2 text-center whitespace-nowrap">${auditorCell}</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-800">${r.department_html || r.department || '—'}</td>
+                    <td class="py-2.5 px-3 text-slate-700 whitespace-pre-line leading-relaxed">${r.document_html || r.document || '—'}</td>
+                    <td class="py-2.5 px-3 text-slate-800 font-medium whitespace-pre-line leading-relaxed">${r.content_html || r.content || '—'}</td>
+                    <td class="py-2.5 px-3 text-slate-700 whitespace-pre-line leading-relaxed">${r.detail_html || r.detail || '—'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterPreviewTable() {
+            if (previewData && activeTabUnit) {
+                renderTableRows(previewData.units[activeTabUnit] || []);
+            }
+        }
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            showToast('Đang tải lên và phân tích file ma trận...', 'success');
+
+            try {
+                const res = await fetch('/api/upload-matrix', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    matrixData = data;
+                    renderFileStatus(data);
+                    renderMonthSelector(data.month_totals);
+                    loadMonthPreview(currentMonth);
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error || 'Lỗi tải lên', 'error');
+                }
+            } catch (err) {
+                showToast('Lỗi khi tải lên file', 'error');
+            }
+            event.target.value = '';
+        }
+
+        async function resetToDefaultMatrix() {
+            try {
+                const res = await fetch('/api/reset-matrix', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    matrixData = data;
+                    renderFileStatus(data);
+                    renderMonthSelector(data.month_totals);
+                    loadMonthPreview(currentMonth);
+                    showToast('Đã đặt lại về file ma trận mặc định', 'success');
+                } else {
+                    showToast('Lỗi khi đặt lại ma trận', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi khi đặt lại ma trận', 'error');
+            }
+        }
+
+        async function triggerExport() {
+            const btnBottom = document.getElementById('btn-export-bottom');
+            const originalText = btnBottom.innerHTML;
+            btnBottom.disabled = true;
+            btnBottom.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> Đang tạo file Excel...`;
+
+            showToast(`Đang kết xuất kế hoạch kiểm soát Tháng ${currentMonth}...`, 'success');
+
+            const payload = {
+                month: currentMonth,
+                year: 2026,
+                fsc_mode: document.getElementById('opt-fsc-mode').value,
+                include_calendar: document.getElementById('opt-calendar').checked,
+                include_empty_sheets: document.getElementById('opt-empty-sheets').checked,
+                auto_schedule: document.getElementById('opt-auto-schedule') ? document.getElementById('opt-auto-schedule').checked : true
+            };
+
+            try {
+                const res = await fetch('/api/export', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || 'Lỗi xuất file');
+                }
+
+                const blob = await res.blob();
+                const monthStr = String(currentMonth).padStart(2, '0');
+                const filename = `Ke_hoach_kiem_soat_T${monthStr}_2026.xlsx`;
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+
+                showToast(`Đã tải về thành công file ${filename}!`, 'success');
+            } catch (err) {
+                showToast(err.message || 'Lỗi xuất file', 'error');
+            } finally {
+                btnBottom.disabled = false;
+                btnBottom.innerHTML = originalText;
+            }
+        }
+
+        // =====================================================================
+        // MODULE 2: REMINDER LOGIC (Email @fe.edu.vn)
+        // =====================================================================
+        async function loadCurrentReminderPlan() {
+            try {
+                const res = await fetch('/api/reminders/current-plan');
+                const data = await res.json();
+                if (data.success) {
+                    currentPlanData = data;
+                    renderReminderPlanSummary(data);
+                    populateDateFilter(data.dates || []);
+                    renderReminderEvents();
+                }
+            } catch (e) {
+                console.error("Lỗi khi tải dữ liệu kế hoạch nhắc việc", e);
+            }
+        }
+
+        async function loadDefaultReminderPlan() {
+            try {
+                const res = await fetch('/api/reminders/current-plan');
+                const data = await res.json();
+                if (data.success) {
+                    currentPlanData = data;
+                    renderReminderPlanSummary(data);
+                    populateDateFilter(data.dates || []);
+                    renderReminderEvents();
+                    showToast('Đã nạp kế hoạch mẫu T08/2026', 'success');
+                }
+            } catch (e) {
+                showToast('Lỗi khi nạp kế hoạch mặc định', 'error');
+            }
+        }
+
+        async function handlePlanFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            showToast('Đang nạp và phân tích file kế hoạch kiểm soát...', 'success');
+
+            try {
+                const res = await fetch('/api/reminders/upload-plan', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    await loadCurrentReminderPlan();
+                } else {
+                    showToast(data.error || 'Lỗi nạp file kế hoạch', 'error');
+                }
+            } catch (err) {
+                showToast('Lỗi kết nối khi nạp file kế hoạch', 'error');
+            }
+            event.target.value = '';
+        }
+
+        function renderReminderPlanSummary(data) {
+            document.getElementById('reminder-plan-filename').innerText = data.filename || 'Chưa nạp';
+            document.getElementById('reminder-plan-summary').innerText = `${data.month ? 'Tháng ' + data.month + '/' : ''}${data.year} • ${data.total_tasks} nhiệm vụ • ${data.total_events} ca kiểm soát`;
+            document.getElementById('stat-reminder-events').innerText = data.total_events || 0;
+            document.getElementById('stat-reminder-dates').innerText = (data.dates || []).length;
+            document.getElementById('stat-reminder-tasks').innerText = data.total_tasks || 0;
+        }
+
+        function populateDateFilter(dates) {
+            const sel = document.getElementById('filter-reminder-date');
+            sel.innerHTML = '<option value="">Tất cả các ngày</option>';
+            dates.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.innerText = d;
+                sel.appendChild(opt);
+            });
+        }
+
+        function getReminderDate(auditDateStr) {
+            if (!auditDateStr) return '—';
+            const parts = auditDateStr.split('/');
+            if (parts.length === 3) {
+                const day = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10);
+                const year = parseInt(parts[2], 10);
+                const dt = new Date(year, month - 1, day);
+                dt.setDate(dt.getDate() - 1);
+                const remDay = String(dt.getDate()).padStart(2, '0');
+                const remMonth = String(dt.getMonth() + 1).padStart(2, '0');
+                const remYear = dt.getFullYear();
+                return `${remDay}/${remMonth}/${remYear}`;
+            }
+            return auditDateStr;
+        }
+
+        function renderReminderEvents() {
+            if (!currentPlanData || !currentPlanData.events) return;
+            const tbody = document.getElementById('reminder-events-tbody');
+            tbody.innerHTML = '';
+
+            const auditorFilter = document.getElementById('filter-reminder-auditor').value;
+            const dateFilter = document.getElementById('filter-reminder-date').value;
+            const searchFilter = (document.getElementById('filter-reminder-search').value || '').toLowerCase();
+
+            const filtered = currentPlanData.events.filter(e => {
+                if (auditorFilter) {
+                    if (auditorFilter === "ThanhNTD6") {
+                        if (!e.auditor.includes("ThanhNTD6")) return false;
+                    } else if (auditorFilter.includes("DiCQ + ThanhNTD6")) {
+                        if (!e.auditor.includes("DiCQ + ThanhNTD6")) return false;
+                    } else if (e.auditor !== auditorFilter) {
+                        return false;
+                    }
+                }
+                if (dateFilter && e.date !== dateFilter) return false;
+                if (searchFilter) {
+                    const str = `${e.unit_display || ''} ${e.dept_display || ''} ${e.auditor || ''} ${(e.representatives || []).join(' ')} ${e.record_time_display || ''} ${(e.tasks || []).map(t=>(t.content || '') + ' ' + (t.department || '') + ' ' + (t.record_time || '')).join(' ')}`.toLowerCase();
+                    if (!str.includes(searchFilter)) return false;
+                }
+                return true;
+            });
+
+            document.getElementById('reminder-events-counter').innerText = `Hiển thị ${filtered.length} / ${currentPlanData.events.length} ca kiểm soát`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="11" class="py-8 text-center text-slate-400">
+                            Không tìm thấy ca kiểm soát nào phù hợp với bộ lọc hiện tại.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach((ev, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-indigo-50/30 transition';
+
+                const remDate = getReminderDate(ev.date);
+
+                let audClass = "bg-white text-slate-800 border border-slate-300 font-bold shadow-2xs";
+                if (ev.auditor.includes("DiCQ") && !ev.auditor.includes("ThanhNTD6")) {
+                    audClass = "bg-[#F7FFB9] text-yellow-900 border border-yellow-400 font-bold shadow-2xs";
+                } else if (ev.auditor.includes("ThanhNTD6") || ev.auditor.includes("DiCQ + ThanhNTD6")) {
+                    audClass = "bg-[#FEF4EC] text-amber-950 border border-orange-300 font-bold shadow-2xs";
+                }
+
+                const contentSnippets = ev.tasks.slice(0, 2).map(t => `<li class="truncate max-w-xs">• ${t.content || t.department}</li>`).join('');
+                const moreCount = ev.tasks.length > 2 ? `<div class="text-[10px] text-slate-400">+ ${ev.tasks.length - 2} nội dung khác</div>` : '';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-3 text-center text-slate-400 font-medium">${idx + 1}</td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <span class="inline-block px-2 py-0.5 rounded bg-blue-50 text-blue-900 font-bold border border-blue-200">${ev.date}</span>
+                    </td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <span class="inline-block px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold border border-amber-200">
+                            ⚠️ ${remDate}
+                        </span>
+                    </td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap font-medium text-slate-700">${ev.time}</td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <span class="inline-block px-2.5 py-1 rounded text-[11px] ${audClass}">${ev.auditor}</span>
+                    </td>
+                    <td class="py-3 px-3 font-semibold text-slate-800">${ev.unit_display || ev.unit}</td>
+                    <td class="py-3 px-3">
+                        <div class="flex flex-wrap gap-1">
+                            ${ev.representatives && ev.representatives.length > 0 
+                                ? ev.representatives.map(r => `<span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200">${r}</span>`).join('') 
+                                : '<span class="text-slate-400 italic text-[11px]">Chưa có</span>'}
+                        </div>
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex flex-wrap gap-1">
+                            ${ev.record_times && ev.record_times.length > 0 
+                                ? ev.record_times.map(t => `<span class="inline-block px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">⏳ ${t}</span>`).join('') 
+                                : '<span class="text-slate-400 italic text-[11px]">-</span>'}
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                        <span class="inline-block px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold">${ev.tasks.length}</span>
+                    </td>
+                    <td class="py-3 px-3 text-slate-600 text-[11px]">
+                        <ul class="space-y-0.5">${contentSnippets}</ul>
+                        ${moreCount}
+                    </td>
+                    <td class="py-3 px-3 text-center whitespace-nowrap">
+                        <div class="inline-flex items-center space-x-1.5">
+                            <button onclick="openReminderPreviewModal('${ev.id}')" title="Xem trước mẫu thư & danh sách nhận" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition cursor-pointer inline-flex items-center space-x-1">
+                                <span>👁️ Xem</span>
+                            </button>
+                            <button onclick="sendQuickEmail('${ev.id}')" title="Gửi Email ngay cho QA & Đại diện đơn vị" class="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold transition cursor-pointer inline-flex items-center space-x-1">
+                                <span>✉️ Gửi Mail</span>
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterReminderEvents() {
+            renderReminderEvents();
+        }
+
+        // =====================================================================
+        // REMINDER PREVIEW MODAL (Email Preview & Customization)
+        // =====================================================================
+        async function openReminderPreviewModal(eventId) {
+            currentPreviewEventId = eventId;
+            const modal = document.getElementById('modal-reminder-preview');
+            modal.classList.remove('hidden');
+
+            document.getElementById('preview-send-status').innerText = 'Đang tải thông tin ca kiểm soát...';
+
+            try {
+                const res = await fetch(`/api/reminders/preview/${eventId}`);
+                const data = await res.json();
+                if (data.success) {
+                    const ev = data.event;
+                    document.getElementById('preview-event-title').innerText = `Nhắc Lịch: ${ev.unit_display || ev.unit}`;
+                    document.getElementById('preview-event-subtitle').innerText = `Ngày kiểm soát: ${ev.date} • Giờ: ${ev.time} • Cán bộ QA: ${ev.auditor}${ev.record_time_display ? ' • ⏳ Hồ sơ: ' + ev.record_time_display : ''}`;
+                    document.getElementById('preview-event-auditor-badge').innerText = ev.auditor;
+
+                    // Set recipient emails in the input field for easy editing
+                    document.getElementById('preview-email-recipients-input').value = data.recipient_emails || '';
+
+                    // Breakdown chips
+                    const breakdownDiv = document.getElementById('preview-email-recipients-breakdown');
+                    breakdownDiv.innerHTML = '';
+
+                    // QA Auditor chip
+                    if (data.qa_emails && data.qa_emails.length > 0) {
+                        data.qa_emails.forEach(em => {
+                            const span = document.createElement('span');
+                            span.className = 'inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-medium border border-blue-200';
+                            span.innerHTML = `👤 QA: <strong>${em}</strong>`;
+                            breakdownDiv.appendChild(span);
+                        });
+                    }
+
+                    // Column C Representatives chip
+                    if (data.rep_emails && data.rep_emails.length > 0) {
+                        data.rep_emails.forEach(em => {
+                            const span = document.createElement('span');
+                            span.className = 'inline-flex items-center px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium border border-emerald-200';
+                            span.innerHTML = `👥 Đơn vị: <strong>${em}</strong>`;
+                            breakdownDiv.appendChild(span);
+                        });
+                    } else if (ev.representatives_display && ev.representatives_display !== "Chưa có thông tin") {
+                        const span = document.createElement('span');
+                        span.className = 'inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-medium border border-amber-200';
+                        span.innerHTML = `👥 Đơn vị: ${ev.representatives_display}`;
+                        breakdownDiv.appendChild(span);
+                    }
+
+                    document.getElementById('preview-email-subject').innerText = data.email_subject;
+
+                    const iframe = document.getElementById('preview-email-iframe');
+                    iframe.srcdoc = data.email_html;
+
+                    document.getElementById('preview-send-status').innerText = 'Sẵn sàng gửi email nhắc lịch tới các cán bộ.';
+                } else {
+                    showToast(data.error || 'Lỗi tải xem trước', 'error');
+                }
+            } catch (e) {
+                showToast('Không thể tải xem trước ca kiểm soát', 'error');
+            }
+        }
+
+        function closeReminderPreviewModal() {
+            document.getElementById('modal-reminder-preview').classList.add('hidden');
+            currentPreviewEventId = null;
+        }
+
+        async function triggerSendCurrentEmail() {
+            if (!currentPreviewEventId) return;
+            const btn = document.getElementById('btn-send-email-action');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = 'Đang gửi email...';
+
+            const recipientEmails = document.getElementById('preview-email-recipients-input').value.trim();
+
+            try {
+                const res = await fetch('/api/reminders/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        event_id: currentPreviewEventId,
+                        recipient_emails: recipientEmails
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    document.getElementById('preview-send-status').innerText = '✅ Đã gửi Email nhắc lịch thành công!';
+                } else {
+                    showToast(data.error || 'Lỗi gửi Email', 'error');
+                    document.getElementById('preview-send-status').innerText = `❌ ${data.error}`;
+                }
+            } catch (e) {
+                showToast('Lỗi kết nối khi gửi Email', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = orig;
+            }
+        }
+
+        async function sendQuickEmail(eventId) {
+            if (!confirm("Gửi Email nhắc việc ngay cho Cán bộ QA và Đại diện đơn vị của ca này?")) return;
+            try {
+                const res = await fetch('/api/reminders/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event_id: eventId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error || 'Lỗi gửi email', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi khi gửi email', 'error');
+            }
+        }
+
+        // =====================================================================
+        // CONFIGURATION MODAL
+        // =====================================================================
+        async function openReminderConfigModal() {
+            const modal = document.getElementById('modal-reminder-config');
+            modal.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/reminders/config');
+                const data = await res.json();
+                if (data.success) {
+                    reminderConfig = data.config;
+                    populateConfigUI(data.config);
+                }
+            } catch (e) {
+                showToast('Lỗi tải cấu hình hệ thống', 'error');
+            }
+        }
+
+        function closeReminderConfigModal() {
+            document.getElementById('modal-reminder-config').classList.add('hidden');
+        }
+
+        function switchConfigTab(tab) {
+            ['email', 'auditors'].forEach(t => {
+                const btn = document.getElementById(`cfg-tab-btn-${t}`);
+                const panel = document.getElementById(`cfg-panel-${t}`);
+                if (t === tab) {
+                    btn.className = 'py-3 px-4 text-blue-600 border-b-2 border-blue-600 cursor-pointer font-bold';
+                    panel.classList.remove('hidden');
+                } else {
+                    btn.className = 'py-3 px-4 text-slate-500 hover:text-slate-700 border-b-2 border-transparent cursor-pointer font-semibold';
+                    panel.classList.add('hidden');
+                }
+            });
+        }
+
+        function populateConfigUI(cfg) {
+            const em = cfg.email || {};
+            document.getElementById('cfg-smtp-host').value = em.smtp_host || 'smtp.gmail.com';
+            document.getElementById('cfg-smtp-port').value = em.smtp_port || 587;
+            document.getElementById('cfg-sender-email').value = em.sender_email || '';
+            document.getElementById('cfg-sender-password').value = em.has_password ? '******' : '';
+            document.getElementById('cfg-sender-name').value = em.sender_name || 'QA FECT - Phòng Đảm Bảo Chất Lượng';
+
+            const listDiv = document.getElementById('cfg-auditors-list');
+            listDiv.innerHTML = '';
+            const auds = cfg.auditors || {};
+
+            Object.entries(auds).forEach(([audCode, info]) => {
+                const card = document.createElement('div');
+                card.className = 'p-3.5 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center';
+                card.innerHTML = `
+                    <div>
+                        <div class="font-bold text-slate-800 text-xs">${info.name || audCode} (${audCode})</div>
+                        <label class="inline-flex items-center space-x-1.5 mt-1 cursor-pointer">
+                            <input type="checkbox" id="aud-enabled-${audCode}" ${info.enabled !== false ? 'checked' : ''} class="rounded text-blue-600">
+                            <span class="text-[11px] text-slate-600">Bật nhắc việc</span>
+                        </label>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-500 mb-0.5">Địa chỉ Email @fe.edu.vn:</label>
+                        <input type="email" id="aud-email-${audCode}" value="${info.email || ''}" placeholder="${audCode.toLowerCase()}@fe.edu.vn" class="w-full px-2.5 py-1.5 border rounded-lg border-slate-200 text-xs focus:bg-white focus:outline-none focus:border-blue-500">
+                    </div>
+                `;
+                listDiv.appendChild(card);
+            });
+        }
+
+        async function saveReminderConfig() {
+            const currentAuditors = reminderConfig ? (reminderConfig.auditors || {}) : {};
+            const updatedAuditors = {};
+
+            Object.keys(currentAuditors).forEach(audCode => {
+                const emailInput = document.getElementById(`aud-email-${audCode}`);
+                const enabledInput = document.getElementById(`aud-enabled-${audCode}`);
+                updatedAuditors[audCode] = {
+                    name: currentAuditors[audCode].name || audCode,
+                    email: emailInput ? emailInput.value.trim() : currentAuditors[audCode].email,
+                    enabled: enabledInput ? enabledInput.checked : true
+                };
+            });
+
+            const newCfg = {
+                email: {
+                    smtp_host: document.getElementById('cfg-smtp-host').value.trim(),
+                    smtp_port: parseInt(document.getElementById('cfg-smtp-port').value, 10) || 587,
+                    use_tls: true,
+                    sender_email: document.getElementById('cfg-sender-email').value.trim(),
+                    sender_password: document.getElementById('cfg-sender-password').value,
+                    sender_name: document.getElementById('cfg-sender-name').value.trim()
+                },
+                auditors: updatedAuditors
+            };
+
+            try {
+                const res = await fetch('/api/reminders/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newCfg)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    closeReminderConfigModal();
+                } else {
+                    showToast(data.error || 'Lỗi lưu cấu hình', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi khi gửi cấu hình lên máy chủ', 'error');
+            }
+        }
+
+        async function testEmailConnection() {
+            const recipient = document.getElementById('cfg-test-recipient').value.trim();
+            const sender = document.getElementById('cfg-sender-email').value.trim();
+            const password = document.getElementById('cfg-sender-password').value;
+
+            if (!recipient) {
+                showToast('Vui lòng nhập địa chỉ email nhận thư thử nghiệm!', 'error');
+                return;
+            }
+            if (!sender) {
+                showToast('Vui lòng nhập email người gửi (Gmail / Google Workspace)!', 'error');
+                return;
+            }
+            if (!password || password === '******') {
+                showToast('Vui lòng nhập mật khẩu ứng dụng (App Password) để thử nghiệm!', 'error');
+                return;
+            }
+
+            showToast('Đang kết nối Google / Gmail SMTP và gửi thư thử...', 'success');
+
+            const payload = {
+                test_email: recipient,
+                smtp_host: document.getElementById('cfg-smtp-host').value.trim(),
+                smtp_port: parseInt(document.getElementById('cfg-smtp-port').value, 10) || 587,
+                sender_email: sender,
+                sender_password: password,
+                sender_name: document.getElementById('cfg-sender-name').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/reminders/test-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error || 'Lỗi thử nghiệm kết nối Email', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi khi gọi API thử nghiệm kết nối', 'error');
+            }
+        }
+
+        // =====================================================================
+        // AUTO-SCANNER CONTROLS & SIMULATION
+        // =====================================================================
+        let autoScannerStatus = null;
+
+        async function fetchAutoScannerStatus() {
+            try {
+                const res = await fetch('/api/reminders/auto-scanner-status');
+                const data = await res.json();
+                if (data.success) {
+                    autoScannerStatus = data;
+                    const sc = data.scanner || {};
+                    const badge = document.getElementById('auto-scanner-badge');
+                    if (badge) {
+                        if (sc.enabled) {
+                            badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+                            badge.innerText = '🟢 ĐANG BẬT';
+                        } else {
+                            badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-500/20 text-slate-300 border border-slate-500/30';
+                            badge.innerText = '⚪ ĐANG TẮT';
+                        }
+                    }
+                    if (document.getElementById('live-system-date')) {
+                        document.getElementById('live-system-date').innerText = data.system_date || '--/--/----';
+                    }
+                    if (document.getElementById('live-scan-time')) {
+                        document.getElementById('live-scan-time').innerText = sc.scan_time || '08:30';
+                    }
+                    if (document.getElementById('live-target-remind-info')) {
+                        document.getElementById('live-target-remind-info').innerText = `Trước ${sc.remind_days_in_advance || 1} ngày`;
+                    }
+                }
+            } catch (e) {
+                console.error("fetchAutoScannerStatus error:", e);
+            }
+        }
+
+        async function triggerAutoScan(force = false) {
+            if (!confirm("Bắt đầu quét ngày hệ thống và gửi email tự động cho các ca kiểm soát ngày mai?")) return;
+            showToast('⚡ Đang quét ngày hệ thống và tự động gửi email...', 'success');
+            try {
+                const res = await fetch('/api/reminders/run-auto-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ force: force })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const msg = `Quét hoàn tất: Tìm thấy ${data.total_matched} ca, đã gửi ${data.sent_count} email, bỏ qua ${data.skipped_count} ca trùng, thất bại ${data.failed_count} ca.`;
+                    showToast(msg, data.failed_count > 0 ? 'error' : 'success');
+                    fetchAutoScannerStatus();
+                    if (data.sent_count > 0) {
+                        openSentHistoryModal();
+                    }
+                } else {
+                    showToast(data.error || 'Lỗi quét tự động', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi khi kích hoạt quét tự động', 'error');
+            }
+        }
+
+        function openSimulateScanModal() {
+            document.getElementById('modal-simulate-scan').classList.remove('hidden');
+            document.getElementById('sim-result-container').classList.add('hidden');
+
+            // Populate date suggestions from current plan dates
+            const sugDiv = document.getElementById('sim-date-suggestions');
+            sugDiv.innerHTML = '';
+            if (currentPlanData && currentPlanData.dates && currentPlanData.dates.length > 0) {
+                // For each event date in plan, calculate day before (simulate scan date)
+                currentPlanData.dates.slice(0, 8).forEach(dStr => {
+                    const parts = dStr.split('.');
+                    if (parts.length === 3) {
+                        const d = parseInt(parts[0], 10);
+                        const m = parseInt(parts[1], 10);
+                        const y = parseInt(parts[2], 10);
+                        const dt = new Date(y, m - 1, d);
+                        dt.setDate(dt.getDate() - 1);
+                        const simD = String(dt.getDate()).padStart(2, '0') + '.' + String(dt.getMonth() + 1).padStart(2, '0') + '.' + dt.getFullYear();
+
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold border border-indigo-200 transition cursor-pointer text-[11px]';
+                        btn.innerText = `${simD} (nhắc ca ${dStr})`;
+                        btn.onclick = () => {
+                            document.getElementById('sim-scan-date-input').value = simD;
+                        };
+                        sugDiv.appendChild(btn);
+                    }
+                });
+            }
+        }
+
+        function closeSimulateScanModal() {
+            document.getElementById('modal-simulate-scan').classList.add('hidden');
+        }
+
+        async function executeSimulatedScan() {
+            const dateInput = document.getElementById('sim-scan-date-input').value.trim();
+            if (!dateInput) {
+                showToast('Vui lòng nhập hoặc chọn ngày quét giả lập!', 'error');
+                return;
+            }
+            const force = document.getElementById('sim-force-resend').checked;
+
+            const btn = document.getElementById('btn-run-sim-scan');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Đang quét & gửi email...</span>';
+
+            try {
+                const res = await fetch('/api/reminders/run-auto-scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ simulate_date: dateInput, force: force })
+                });
+                const data = await res.json();
+                
+                const resBox = document.getElementById('sim-result-container');
+                resBox.classList.remove('hidden');
+
+                const badge = document.getElementById('sim-result-badge');
+                if (data.success) {
+                    badge.className = 'px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800';
+                    badge.innerText = `Thành công (${data.sent_count} đã gửi, ${data.skipped_count} bỏ qua)`;
+
+                    document.getElementById('sim-result-summary').innerHTML = `
+                        📅 Ngày quét giả lập: <strong>${data.scan_date}</strong> &bull; Mục tiêu ca kiểm soát ngày: <strong class="text-blue-600">${data.target_dates.join(', ')}</strong><br>
+                        📊 Tìm thấy: <strong>${data.total_matched}</strong> ca phù hợp &bull; Đã gửi thành công: <strong class="text-emerald-600">${data.sent_count}</strong> &bull; Bỏ qua (đã gửi trước đó): <strong class="text-amber-600">${data.skipped_count}</strong> &bull; Lỗi: <strong class="text-red-600">${data.failed_count}</strong>
+                    `;
+
+                    const listDiv = document.getElementById('sim-result-list');
+                    listDiv.innerHTML = '';
+                    if (data.results && data.results.length > 0) {
+                        data.results.forEach(r => {
+                            const item = document.createElement('div');
+                            const isSuccess = r.status === 'SUCCESS';
+                            const isSkipped = r.status === 'SKIPPED';
+                            const borderCol = isSuccess ? 'border-emerald-200 bg-emerald-50/50' : (isSkipped ? 'border-amber-200 bg-amber-50/50' : 'border-red-200 bg-red-50/50');
+                            const textCol = isSuccess ? 'text-emerald-800' : (isSkipped ? 'text-amber-800' : 'text-red-800');
+                            const icon = isSuccess ? '✅' : (isSkipped ? '⏭️' : '❌');
+
+                            item.className = `p-2.5 rounded-lg border ${borderCol} text-xs`;
+                            item.innerHTML = `
+                                <div class="flex items-center justify-between font-bold ${textCol}">
+                                    <span>${icon} ${r.unit} (${r.auditor}) - Ngày: ${r.date}</span>
+                                    <span class="uppercase text-[10px] px-1.5 py-0.5 rounded bg-white/70 border border-current">${r.status}</span>
+                                </div>
+                                <div class="text-[11px] text-slate-600 mt-1">${r.message}</div>
+                                ${r.recipients && r.recipients.length > 0 ? `<div class="text-[10px] text-slate-500 mt-0.5">Người nhận: <strong>${r.recipients.join(', ')}</strong></div>` : ''}
+                            `;
+                            listDiv.appendChild(item);
+                        });
+                    } else {
+                        listDiv.innerHTML = `<div class="text-slate-400 italic p-2 text-center">Không có ca kiểm soát nào diễn ra vào ngày mục tiêu ${data.target_dates.join(', ')}</div>`;
+                    }
+                    showToast('Đã hoàn thành lượt quét thử nghiệm!', 'success');
+                } else {
+                    showToast(data.error || 'Lỗi quét thử nghiệm', 'error');
+                }
+            } catch (e) {
+                showToast('Lỗi khi thực hiện quét thử nghiệm', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }
+        }
+
+        async function openSentHistoryModal() {
+            document.getElementById('modal-sent-history').classList.remove('hidden');
+            await loadSentHistory();
+        }
+
+        function closeSentHistoryModal() {
+            document.getElementById('modal-sent-history').classList.add('hidden');
+        }
+
+        async function loadSentHistory() {
+            const tbody = document.getElementById('sent-history-tbody');
+            tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400">Đang tải nhật ký...</td></tr>';
+
+            try {
+                const res = await fetch('/api/reminders/sent-history');
+                const data = await res.json();
+                if (data.success) {
+                    const history = (data.history || []).slice().reverse(); // newest first
+                    document.getElementById('history-total-count').innerText = `Tổng số: ${history.length} lượt gửi`;
+                    if (history.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-slate-400 italic">Chưa có lịch sử gửi email nào.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = '';
+                    history.forEach((h, idx) => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-slate-50 transition';
+
+                        const sentTime = h.sent_at ? new Date(h.sent_at).toLocaleString('vi-VN') : '—';
+                        const isSuccess = h.status === 'SUCCESS';
+                        const statusBadge = isSuccess 
+                            ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Thành công</span>'
+                            : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">Thất bại</span>';
+                        const modeBadge = h.mode === 'AUTO' 
+                            ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-800">Tự động</span>' 
+                            : '<span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-800">Thủ công</span>';
+
+                        tr.innerHTML = `
+                            <td class="py-2.5 px-3 text-center text-slate-400 font-medium">${idx + 1}</td>
+                            <td class="py-2.5 px-3 font-mono text-[10px] text-slate-600 whitespace-nowrap">${sentTime}</td>
+                            <td class="py-2.5 px-3 text-center font-bold text-blue-900 whitespace-nowrap">${h.date || '—'}</td>
+                            <td class="py-2.5 px-3 text-center font-semibold text-slate-700 whitespace-nowrap">${h.auditor || '—'}</td>
+                            <td class="py-2.5 px-3 font-medium text-slate-800">${h.unit || '—'}</td>
+                            <td class="py-2.5 px-3 text-slate-600 text-[10px] font-mono">${(h.recipients || []).join(', ') || '—'}</td>
+                            <td class="py-2.5 px-3 text-center">${modeBadge}</td>
+                            <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-red-500">Lỗi khi tải nhật ký gửi thư</td></tr>';
+            }
+        }
+
+        async function clearSentHistoryConfirm() {
+            if (!confirm("Bạn có chắc chắn muốn xóa toàn bộ nhật ký gửi thư?")) return;
+            try {
+                const res = await fetch('/api/reminders/clear-sent-history', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    await loadSentHistory();
+                }
+            } catch (e) {
+                showToast('Lỗi khi xóa nhật ký', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
