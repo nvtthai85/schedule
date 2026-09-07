@@ -1,0 +1,46 @@
+{
+  "history": [
+    {
+      "event_id": "07.10.2026_ThaoTDP_Cả ngày",
+      "date": "07.10.2026",
+      "unit": "FPTU",
+      "auditor": "ThaoTDP",
+      "status": "SUCCESS",
+      "message": "Đã gửi email nhắc lịch thành công tới 2 người nhận: thaotdp@fe.edu.vn, thainvt@fe.edu.vn",
+      "recipients": [
+        "thaotdp@fe.edu.vn",
+        "thainvt@fe.edu.vn"
+      ],
+      "sent_at": "2026-09-04T21:22:29.254965",
+      "mode": "MANUAL"
+    },
+    {
+      "event_id": "08.10.2026_ThaoTDP_Chiều",
+      "date": "08.10.2026",
+      "unit": "FPTU",
+      "auditor": "ThaoTDP",
+      "status": "SUCCESS",
+      "message": "Đã gửi email nhắc lịch thành công tới 2 người nhận: thaotdp@fe.edu.vn, thainvt@fe.edu.vn",
+      "recipients": [
+        "thaotdp@fe.edu.vn",
+        "thainvt@fe.edu.vn"
+      ],
+      "sent_at": "2026-09-06T15:52:05.469655",
+      "mode": "MANUAL"
+    },
+    {
+      "event_id": "07.10.2026_ThaoTDP_Cả ngày",
+      "date": "07.10.2026",
+      "unit": "FPTU",
+      "auditor": "ThaoTDP",
+      "status": "SUCCESS",
+      "message": "Đã gửi email nhắc lịch thành công tới 2 người nhận: thaotdp@fe.edu.vn, thainvt@fe.edu.vn",
+      "recipients": [
+        "thaotdp@fe.edu.vn",
+        "thainvt@fe.edu.vn"
+      ],
+      "sent_at": "2026-09-08T05:37:59.864079",
+      "mode": "MANUAL"
+    }
+  ]
+}

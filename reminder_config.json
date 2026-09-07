@@ -1,0 +1,27 @@
+{
+  "email": {
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "use_tls": true,
+    "sender_email": "qafect@gmail.com",
+    "sender_password": "iawsyawhjtamelqc",
+    "sender_name": "QA FECT - Phòng Đảm Bảo Chất Lượng"
+  },
+  "auditors": {
+    "ThaoTDP": {
+      "name": "Trần Đoàn Phương Thảo",
+      "email": "thaotdp@fe.edu.vn",
+      "enabled": true
+    },
+    "DiCQ": {
+      "name": "Chung Quốc Di",
+      "email": "dicq@fe.edu.vn",
+      "enabled": true
+    },
+    "ThanhNTD6": {
+      "name": "Nguyễn Thị Đan Thanh",
+      "email": "thanhntd6@fe.edu.vn",
+      "enabled": true
+    }
+  }
+}
